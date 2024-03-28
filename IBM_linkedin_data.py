@@ -10,6 +10,7 @@ from selenium.common.exceptions import TimeoutException
 import time
 import pyperclip as pc
 import regex as re
+import csv
 
 #Driver setup
 
@@ -17,14 +18,15 @@ import regex as re
 
 edge_options = webdriver.EdgeOptions()
 edge_options.use_chromium = True 
-edge_options.add_argument("user-data-dir=C:\\Users\\AMD HOME\\AppData\\Local\\Microsoft\\Edge\\User Data")
-edge_options.add_argument("profile-directory=Default")
+edge_options.add_argument("user-data-dir=C:\\Users\\AMD_LAPTOP\\AppData\\Local\\Microsoft\\Edge\\User Data")
+edge_options.add_argument("profile-directory=Profile 2")
 
 driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()),options = edge_options)
 
 
 driver.get("https://www.linkedin.com/company/ibm/posts/?feedView=all")
 driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[1]/div/button[2]""")[0].click()
+typ = driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[1]/div/button[2]""")[0].text
 
 #time.sleep(5)#Time for loading
 ##driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/button""")[0].click()
@@ -35,16 +37,19 @@ driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]
 
 a = 0
 b = 0
-for i in range(1,10):
+for i in range(2,10):
     
     print(f"----------------------------{i}th - post str-----------------------------------")
     WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.XPATH, f"""/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/div[1]/div[{i}]/div/div/div/div/div""")))
     text = driver.find_elements(By.XPATH, f"""/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/div[1]/div[{i}]/div/div/div/div/div""")[0].text
     #print(text)
-    fol = re.findall('\d(?:\d|,|)+\d followers*', text)
-    react = re.findall('\d(?:\d|,|)*\d\s(?:\d|,|)*\d comments*\s(?:\d|,|)*\d reposts*', text)
-    edit = re.findall('\d(\?:d|,|)*\d followers\s.*• Edited •', text)
+    fol = int(re.findall('\d(?:\d|,|)+\d followers*', text)[0].split(' ')[0].replace(',',''))
+    all_react = re.findall('\d(?:\d|,|)*\d\s(?:\d|,|)*\d comments*\s(?:\d|,|)*\d reposts*', text)[0].split('\n')
+    react = int(all_react[0].replace(',',''))
+    repost = int(all_react[1].split(' ')[0].replace(',',''))
+    comments = int(all_react[2].split(' ')[0].replace(',',''))
+    edit = 'yes' if len(re.findall('\d(\?:d|,|)*\d followers\s.*• Edited •', text))>0 else 'no'
     
     try:
 
@@ -62,7 +67,8 @@ for i in range(1,10):
         time.sleep(1)
         link = pc.paste()
         postID = re.findall('[0-9]{19}', link)
-
+        tm_stamp = (int(postID[0]) >> len(bin(int(postID[0])))-43)//1000
+        exact_date = time.ctime(tm_stamp)
         size = driver.find_elements(By.XPATH, f"""/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/div[1]/div[{i}]""")[0].size
         #print(size)
 
@@ -76,8 +82,11 @@ for i in range(1,10):
         #print("yus i executed")
         #print('fol: \n',fol,'\nreact: \n',react,'\nedit: \n',edit,'\npostID:\n',postID)
         ind = text.rfind('•')
+        txt = text[ind:ind+30].casefold().replace('\n',' ')                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
 
-        print("Post ID: "+postID[0],text[ind:ind+30].casefold().replace('\n',' '),"followers: "+fol[0],"Reaction: "+react[0],"Edited : "+('yes' if len(edit)>0 else 'no'),"Link: "+link,sep='\n')
+        #print("Post ID: "+postID[0],"Type: "+typ,"followers: "+fol[0],"Reaction: "+react,"Edited : "+edit,"Link: "+link,sep='\n')
+        row = [int(postID[0]), tm_stamp, typ, fol, react, comments, repost, edit, link, txt, exact_date]
+        print(row)
 
     except Exception as e:
         print("not real post")
