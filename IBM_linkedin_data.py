@@ -18,8 +18,8 @@ import csv
 
 edge_options = webdriver.EdgeOptions()
 edge_options.use_chromium = True 
-edge_options.add_argument("user-data-dir=C:\\Users\\AMD_LAPTOP\\AppData\\Local\\Microsoft\\Edge\\User Data")
-edge_options.add_argument("profile-directory=Profile 2")
+edge_options.add_argument("user-data-dir=C:\\Users\\AMD HOME\\AppData\\Local\\Microsoft\\Edge\\User Data")
+edge_options.add_argument("profile-directory=Default")
 
 driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()),options = edge_options)
 
@@ -37,7 +37,7 @@ typ = driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/
 
 a = 0
 b = 0
-for i in range(2,10):
+for i in range(1,10):
     
     print(f"----------------------------{i}th - post str-----------------------------------")
     WebDriverWait(driver, 10).until(
@@ -45,10 +45,22 @@ for i in range(2,10):
     text = driver.find_elements(By.XPATH, f"""/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/div[1]/div[{i}]/div/div/div/div/div""")[0].text
     #print(text)
     fol = int(re.findall('\d(?:\d|,|)+\d followers*', text)[0].split(' ')[0].replace(',',''))
-    all_react = re.findall('\d(?:\d|,|)*\d\s(?:\d|,|)*\d comments*\s(?:\d|,|)*\d reposts*', text)[0].split('\n')
+    
+    all_react = re.findall('\d(?:\d|,|)*\d\s(?:(?:\d|,|)*\d comments*\s)?(?:(?:\d|,|)*\d reposts*\s)?Like\sComment\sRepost\sSend', text)[0].split('\n')
     react = int(all_react[0].replace(',',''))
-    repost = int(all_react[1].split(' ')[0].replace(',',''))
-    comments = int(all_react[2].split(' ')[0].replace(',',''))
+    
+    if len(all_react)>5 and 'comment' in all_react[1]:
+        comments = int(all_react[1].split(' ')[0].replace(',',''))
+    else:
+        comments = 0
+        
+    if len(all_react)>5 and ('repost' in all_react[2] or 'repost' in all_react[1]):
+        pos = 2 if 'comment' in all_react[1] else 1
+        repost = int(all_react[pos].split(' ')[0].replace(',',''))   
+    else:
+        repost = 0
+
+        
     edit = 'yes' if len(re.findall('\d(\?:d|,|)*\d followers\s.*• Edited •', text))>0 else 'no'
     
     try:
