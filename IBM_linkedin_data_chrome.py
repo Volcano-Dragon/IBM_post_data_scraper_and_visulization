@@ -1,9 +1,6 @@
 #import required libraries
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.service import Service as EdgeService
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
-
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
@@ -13,21 +10,35 @@ import pyperclip as pc
 import regex as re
 import csv
 
-#Driver setup
+
+#from selenium.webdriver.edge.service import Service as EdgeService
+#from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+
+options = Options()
+options.add_argument(r"--user-data-dir=C:\Users\AMD HOME\AppData\Local\Google\Chrome\User Data") #e.g. C:\Users\You\AppData\Local\Google\Chrome\User Data
+options.add_argument(r'--profile-directory=Default')
+options.add_argument(r'--max_old_space_size=4096')#e.g. Profile 3
+
+
 
 #Page request
 
-edge_options = webdriver.EdgeOptions()
-edge_options.use_chromium = True 
-edge_options.add_argument("user-data-dir=C:\\Users\\AMD HOME\\AppData\\Local\\Microsoft\\Edge\\User Data")
-edge_options.add_argument("profile-directory=Default")
-
-driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()),options = edge_options)
-
+##edge_options = webdriver.EdgeOptions()
+##edge_options.use_chromium = True 
+##edge_options.add_argument("user-data-dir=C:\\Users\\AMD HOME\\AppData\\Local\\Microsoft\\Edge\\User Data")
+##edge_options.add_argument("profile-directory=Default")
+##
+##driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()),options = edge_options)
+service = Service(executable_path=r'C:\Users\AMD HOME\Documents\chromedriver_win32\c\chromedriver.exe')
+driver = webdriver.Chrome(service=service, options=options)
 
 driver.get("https://www.linkedin.com/company/ibm/posts/?feedView=all")
-driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[1]/div/button[5]""")[0].click()
-typ = driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[1]/div/button[5]""")[0].text
+time.sleep(1)
+driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[1]/div/button[3]""")[0].click()
+typ = driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[1]/div/button[3]""")[0].text
 
 #time.sleep(5)#Time for loading
 ##driver.find_elements(By.XPATH, """/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/button""")[0].click()
@@ -42,10 +53,11 @@ a = 0
 b = 0
 with open("text_data.txt","x") as file:
     pass
+#driver.close()
 for i in range(1,500):
-    
+   # driver = webdriver.Chrome(service=service, options=options)
     print(f"{i} post str")
-    WebDriverWait(driver, 200).until(
+    WebDriverWait(driver, 2000).until(
     EC.presence_of_element_located((By.XPATH, f"""/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/div[1]/div[{i}]/div/div/div/div/div""")))
     text = driver.find_elements(By.XPATH, f"""/html/body/div[4]/div[3]/div/div[2]/div/div[2]/main/div[2]/div/div[2]/div[2]/div/div[1]/div[{i}]/div/div/div/div/div""")[0].text
     if 'IBM reposted this' in text:
@@ -143,6 +155,7 @@ for i in range(1,500):
 
 
     print(f"{i}post end")
+ #   driver.close()
 
 print("All done")
 
