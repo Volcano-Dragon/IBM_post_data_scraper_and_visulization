@@ -13,10 +13,12 @@ Provides a foundation for further development, such as expanding data collection
 
 ## Requirements:
 
-Python 3.x (https://www.python.org/downloads/)
-Selenium (https://pypi.org/project/selenium/)
-Pandas
-Seaborn
+<ul>
+<li>Python 3.x (https://www.python.org/downloads/)</li>
+<li>Selenium (https://pypi.org/project/selenium/)</li>
+<li>Pandas</li>
+<li>Seaborn</li>
+</ul>
 
 
 ## Data Storage:
